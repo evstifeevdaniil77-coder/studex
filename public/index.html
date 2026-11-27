@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Studex · 12 МЕСТ — Навигатор поступления</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ===================== ШАПКА + ФИРМЕННЫЙ ЗНАК + 12 СЕГМЕНТОВ ===================== -->
+  <header class="app-header">
+    <div class="header-top-grid">
+      <button type="button" class="brand-btn" id="brand-home" aria-label="На главный экран 12 МЕСТ">
+        <span class="stamp-box" aria-hidden="true">12</span>
+        <span class="brand-word">МЕСТ</span>
+      </button>
+
+      <!-- Главные вкладки: ТАДЖИКИСТАН / ЗА РУБЕЖОМ -->
+      <nav class="top-tabs" role="tablist" aria-label="Направление поступления">
+        <button type="button" role="tab" id="tab-tj" aria-selected="true" data-mode="tj">ТАДЖИКИСТАН</button>
+        <button type="button" role="tab" id="tab-abroad" aria-selected="false" data-mode="abroad">ЗА РУБЕЖОМ</button>
+      </nav>
+
+      <div class="header-meta">
+        <span class="db-pill" id="db-counter">БАЗА: …</span>
+        <button type="button" class="mini-nav-btn" id="open-clusters-btn">КЛАСТЕРЫ?</button>
+      </div>
+    </div>
+
+    <div class="header-bottom-grid">
+      <!-- Поднавигация для Таджикистана: Подбор / Шпаргалка -->
+      <div class="sub-tabs" id="tj-subtabs">
+        <button type="button" class="sub-tab" id="nav-pick" aria-pressed="true" data-screen="pick">ПОДБОР</button>
+        <button type="button" class="sub-tab" id="nav-sheet" aria-pressed="false" data-screen="sheet">
+          ШПАРГАЛКА <span id="nav-sheet-count">0/12</span>
+        </button>
+      </div>
+
+      <!-- Фирменная полоска из 12 сегментов (на каждом экране) -->
+      <div class="strip-wrap" aria-label="Прогресс 12 мест">
+        <div class="strip-head">
+          <span class="strip-title" id="strip-title">БЛАНК НТЦ · 0 ИЗ 12</span>
+          <span class="strip-hint" id="strip-hint">ПУСТО</span>
+        </div>
+        <div class="strip-12" id="strip-12" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0">
+          <span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span>
+          <span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span>
+          <span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ===================== ЭКРАН 1: ПОДБОР ===================== -->
+    <section class="screen" id="screen-pick" aria-label="Подбор специальностей ММТ">
+      <div class="pick-layout">
+        <div class="pick-controls">
+          <h1 class="hero-title">
+            <span>КУДА ПОСТУПИТЬ?</span>
+            <span class="accent">12 МЕСТ.</span>
+          </h1>
+
+          <div class="block-label">КЛАСТЕР (1–5)</div>
+          <div class="cluster-squares" id="cluster-squares" role="radiogroup" aria-label="Выбор кластера">
+            <button type="button" class="sq-btn" role="radio" aria-checked="true" data-cluster="1">1</button>
+            <button type="button" class="sq-btn" role="radio" aria-checked="false" data-cluster="2">2</button>
+            <button type="button" class="sq-btn" role="radio" aria-checked="false" data-cluster="3">3</button>
+            <button type="button" class="sq-btn" role="radio" aria-checked="false" data-cluster="4">4</button>
+            <button type="button" class="sq-btn" role="radio" aria-checked="false" data-cluster="5">5</button>
+          </div>
+
+          <!-- Карточка с описанием выбранного кластера -->
+          <article class="brutal-card cluster-info-card" id="cluster-info-card">
+            <div class="card-kicker" id="ci-kicker">КЛАСТЕР 01</div>
+            <h2 class="card-title" id="ci-name">ЕСТЕСТВЕННЫЙ И ТЕХНИЧЕСКИЙ</h2>
+            <p class="card-desc" id="ci-subjects">Предметы (11 кл.): Математика, физика, химия</p>
+            <button type="button" class="text-link-btn" id="ci-more-btn">ЧТО ЗНАЧИТ КЛАСТЕР →</button>
+          </article>
+
+          <!-- Переключатель ВУЗ / КОЛЛЕДЖ -->
+          <div class="block-label">УРОВЕНЬ</div>
+          <div class="level-toggle" role="radiogroup" aria-label="Уровень образования">
+            <button type="button" class="toggle-btn" role="radio" aria-checked="true" data-level="ВУЗ">ВУЗ</button>
+            <button type="button" class="toggle-btn" role="radio" aria-checked="false" data-level="Колледж">КОЛЛЕДЖ</button>
+          </div>
+
+          <!-- Поля ввода в виде строк с жирной нижней линией -->
+          <div class="line-fields">
+            <div class="line-field">
+              <label for="pick-city">ГОРОД</label>
+              <select id="pick-city">
+                <option value="">Любой город</option>
+              </select>
+            </div>
+
+            <div class="line-field">
+              <label for="pick-budget">БЮДЖЕТ / ГОД (СОМОНИ)</label>
+              <input type="number" id="pick-budget" inputmode="numeric" min="0" step="100" placeholder="0 = только бюджет, пусто = любой">
+            </div>
+
+            <div class="line-field">
+              <label for="pick-score">ТВОЙ БАЛЛ ММТ</label>
+              <input type="number" id="pick-score" inputmode="decimal" min="0" max="1000" step="any" placeholder="[балл] — если уже сдал">
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary" id="build-sheet-btn">СОБРАТЬ ШПАРГАЛКУ</button>
+        </div>
+
+        <!-- Результаты подбора из БД -->
+        <section class="pick-results-section" id="pick-results-section">
+          <div class="results-header">
+            <span class="results-count" id="pick-count">ЗАГРУЗКА…</span>
+            <button type="button" class="mini-nav-btn" id="goto-sheet-inline">БЛАНК →</button>
+          </div>
+          <div class="legend-inline">
+            <span class="st-badge st-pass">Проходите</span>
+            <span class="st-badge st-risk">Рискованно</span>
+            <span class="st-badge st-low">Не хватает баллов</span>
+          </div>
+          <ul class="prog-list" id="pick-list"></ul>
+          <button type="button" class="btn-secondary" id="pick-more-btn" hidden>ПОКАЗАТЬ ЕЩЁ</button>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===================== ЭКРАН 2: ШПАРГАЛКА НТЦ ===================== -->
+    <section class="screen" id="screen-sheet" aria-label="Шпаргалка НТЦ на 12 мест" hidden>
+      <div class="screen-head">
+        <h1 class="screen-title">ШПАРГАЛКА НТЦ</h1>
+        <button type="button" class="mini-nav-btn" id="sheet-clear-btn">СБРОС</button>
+      </div>
+      <p class="screen-sub">12 комбинаций по порядку приоритета. Нажми «+ МЕСТО», чтобы добавить программу из подбора.</p>
+
+      <ol class="sheet-rows" id="sheet-rows"></ol>
+
+      <!-- Пунктирный рекламный слот -->
+      <aside class="ad-slot" aria-label="Рекламный блок">
+        <p class="ad-slot-text" id="sheet-ad-text">Реклама · [курсы подготовки к ММТ]</p>
+      </aside>
+
+      <div class="sheet-actions">
+        <button type="button" class="btn-primary" id="sync-tg-btn">СОХРАНИТЬ В TELEGRAM</button>
+        <button type="button" class="btn-secondary" id="download-png-btn">СКАЧАТЬ КАРТИНКОЙ</button>
+        <button type="button" class="btn-secondary" id="copy-sheet-btn">СКОПИРОВАТЬ ТЕКСТОМ</button>
+        <div class="status-msg" id="sheet-status" role="status" aria-live="polite" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== ЭКРАН 3: ЗА РУБЕЖОМ ===================== -->
+    <section class="screen" id="screen-abroad" aria-label="Поступление за рубежом" hidden>
+      <h1 class="screen-title">ЗА РУБЕЖОМ</h1>
+      <p class="screen-sub">IELTS / TOEFL, гранты и база реальных университетов мира (OpenAlex).</p>
+
+      <div class="line-fields">
+        <div class="line-field">
+          <label for="ab-cert-type">СЕРТИФИКАТ</label>
+          <select id="ab-cert-type">
+            <option value="IELTS">IELTS (0–9)</option>
+            <option value="TOEFL">TOEFL iBT (0–120)</option>
+            <option value="NONE">Нет сертификата</option>
+          </select>
+        </div>
+
+        <div class="line-field" id="ab-score-wrap">
+          <label for="ab-cert-score" id="ab-score-label">ТВОЙ IELTS</label>
+          <input type="number" id="ab-cert-score" inputmode="decimal" min="0" max="9" step="0.5" placeholder="Например: 6.5">
+        </div>
+
+        <div class="line-field">
+          <label for="ab-gpa">GPA (АТТЕСТАТ 1–5)</label>
+          <input type="number" id="ab-gpa" inputmode="decimal" min="1" max="5" step="0.01" placeholder="Например: 4.5">
+        </div>
+
+        <div class="line-field">
+          <label for="ab-budget">БЮДЖЕТ / ГОД (USD)</label>
+          <input type="number" id="ab-budget" inputmode="numeric" min="0" step="500" placeholder="Например: 5000">
+        </div>
+
+        <div class="line-field">
+          <label for="ab-country">СТРАНА</label>
+          <select id="ab-country">
+            <option value="">Любая страна</option>
+          </select>
+        </div>
+
+        <div class="line-field">
+          <label for="ab-search">ПОИСК ВУЗА</label>
+          <input type="search" id="ab-search" placeholder="Название или город (англ.)">
+        </div>
+
+        <label class="ab-check-row" for="ab-show-all">
+          <input type="checkbox" id="ab-show-all">
+          <span>Показать все вузы, даже если не хватает баллов</span>
+        </label>
+      </div>
+
+      <div class="results-header">
+        <span class="results-count" id="ab-count">ЗАГРУЗКА…</span>
+        <div class="pager-inline" id="ab-pager" hidden>
+          <button type="button" class="mini-nav-btn" id="ab-prev">←</button>
+          <span class="pager-num" id="ab-page-num">1/1</span>
+          <button type="button" class="mini-nav-btn" id="ab-next">→</button>
+        </div>
+      </div>
+
+      <ul class="abroad-list" id="abroad-list"></ul>
+    </section>
+
+    <!-- ===================== ЭКРАН 4: ЧТО ЗНАЧИТ КЛАСТЕР ===================== -->
+    <section class="screen" id="screen-clusters" aria-label="Что значит кластер" hidden>
+      <div class="screen-head">
+        <h1 class="screen-title">ЧТО ЗНАЧИТ КЛАСТЕР</h1>
+        <button type="button" class="mini-nav-btn" id="clusters-back-btn">← НАЗАД</button>
+      </div>
+      <p class="screen-sub">5 кластеров ММТ НТЦ: направления и экзаменационные предметы для 11 и 9 классов.</p>
+
+      <div class="clusters-detail-list" id="clusters-detail-list"></div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>12 МЕСТ · Бесплатный навигатор поступления. Данные ММТ — НТЦ (ntc.tj), вузы мира — OpenAlex.</p>
+  </footer>
+</div>
+
+<!-- Плавающая нижняя панель ШПАРГАЛКА (оба отсека) -->
+<aside class="cs-float-bar" aria-label="Сборщик шпаргалки">
+  <div class="cs-float-inner">
+    <div class="cs-float-meta">
+      <span class="cs-float-label">ШПАРГАЛКА</span>
+      <span class="cs-float-counts" id="cs-float-counts">ММТ: 0/12 · ЗАРУБЕЖ: 0</span>
+    </div>
+    <button type="button" class="cs-float-btn" id="cs-float-open">ОТКРЫТЬ</button>
+  </div>
+</aside>
+
+<!-- Модальное окно «Шпаргалка» с двумя отсеками -->
+<dialog id="cheatsheet-dialog" class="brutal-dialog cs-modal" closedby="any" aria-labelledby="cs-modal-title">
+  <div class="dialog-head">
+    <h1 id="cs-modal-title" class="dialog-title">ШПАРГАЛКА</h1>
+    <form method="dialog">
+      <button type="submit" class="mini-nav-btn" autofocus>✕</button>
+    </form>
+  </div>
+
+  <div class="cs-modal-tabs" role="tablist" aria-label="Разделы шпаргалки">
+    <button type="button" role="tab" id="cs-tab-mmt" aria-selected="true" data-cs-tab="mmt">
+      БЛАНК ММТ (<span id="cs-tab-mmt-n">0</span>/12)
+    </button>
+    <button type="button" role="tab" id="cs-tab-abroad" aria-selected="false" data-cs-tab="abroad">
+      ЗАРУБЕЖНЫЕ (<span id="cs-tab-abroad-n">0</span>)
+    </button>
+  </div>
+
+  <div class="cs-modal-body" id="cs-modal-body"></div>
+
+  <div class="cs-modal-foot">
+    <button type="button" class="btn-primary" id="cs-modal-action">СКОПИРОВАТЬ ДЛЯ БЛАНКА</button>
+    <button type="button" class="btn-secondary" id="cs-modal-sync-bot">СОХРАНИТЬ В БОТ</button>
+    <div class="status-msg" id="cs-modal-status" role="status" aria-live="polite" hidden></div>
+  </div>
+</dialog>
+
+<!-- Модальное окно заявки агентству (нативный dialog) -->
+<dialog id="agency-dialog" class="brutal-dialog" closedby="any" aria-labelledby="agency-title">
+  <div class="dialog-head">
+    <h1 id="agency-title" class="dialog-title">ОБСУДИТЬ С АГЕНТСТВОМ</h1>
+    <form method="dialog">
+      <button type="submit" class="mini-nav-btn" autofocus>✕</button>
+    </form>
+  </div>
+
+  <p class="dialog-target" id="agency-target"></p>
+
+  <form id="agency-form" novalidate>
+    <input type="hidden" id="ag-target-uni" name="target_university" value="">
+
+    <div class="line-fields">
+      <div class="line-field">
+        <label for="ag-region">РЕГИОН</label>
+        <select id="ag-region" name="region">
+          <option value="">Выберите регион</option>
+        </select>
+        <p class="field-err" id="err-region" hidden></p>
+      </div>
+
+      <div class="line-field">
+        <label for="ag-name">ТВОЁ ИМЯ</label>
+        <input type="text" id="ag-name" name="name" autocomplete="name" maxlength="100" placeholder="Имя">
+        <p class="field-err" id="err-name" hidden></p>
+      </div>
+
+      <div class="line-field">
+        <label for="ag-phone">ТЕЛЕФОН</label>
+        <input type="tel" id="ag-phone" name="phone" autocomplete="tel" placeholder="+992 900 00 00 00">
+        <p class="field-err" id="err-phone" hidden></p>
+      </div>
+    </div>
+
+    <div class="block-label">КУДА НАПИСАТЬ</div>
+    <div class="level-toggle" role="radiogroup" aria-label="Мессенджер">
+      <button type="button" class="toggle-btn" role="radio" aria-checked="true" data-messenger="Telegram">TELEGRAM</button>
+      <button type="button" class="toggle-btn" role="radio" aria-checked="false" data-messenger="WhatsApp">WHATSAPP</button>
+    </div>
+    <p class="field-err" id="err-messenger" hidden></p>
+    <p class="field-err" id="err-certificate" hidden></p>
+    <p class="field-err" id="err-certificate_score" hidden></p>
+    <p class="field-err" id="err-gpa" hidden></p>
+    <p class="field-err" id="err-budget_usd" hidden></p>
+
+    <div class="hp" aria-hidden="true">
+      <label for="ag-website">Не заполняйте</label>
+      <input type="text" id="ag-website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <button type="submit" class="btn-primary dialog-submit">ОТПРАВИТЬ ЗАЯВКУ</button>
+    <p class="status-msg" id="agency-msg" role="status" hidden></p>
+    <div id="agency-matches" hidden></div>
+  </form>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>

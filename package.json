@@ -1,0 +1,13 @@
+{
+  "name": "navigator-postupleniya",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Навигатор поступления: подбор специальностей по баллу ММТ и заявки на учёбу за рубежом",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js"
+  }
+}
