@@ -126,30 +126,18 @@ a:hover { color: var(--accent-hover); }
   line-height: 1.1;
 }
 
+.brand-compass {
+  flex: none;
+  display: block;
+}
+
 .brand-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   font-family: var(--font-serif);
   font-weight: 700;
   font-size: 1.45rem;
   letter-spacing: -0.015em;
-  color: var(--ink);
+  color: #1F2937;
 }
-
-.brand-grid {
-  display: inline-grid;
-  grid-template-columns: repeat(2, 5px);
-  gap: 3px;
-  flex: none;
-}
-.brand-grid span {
-  width: 5px;
-  height: 5px;
-  border-radius: 1.5px;
-  background: var(--accent);
-}
-.brand-grid span:last-child { opacity: 0.55; }
 
 .brand-sub {
   font-family: var(--font-ui);
