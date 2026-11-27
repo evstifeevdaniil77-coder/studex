@@ -5,6 +5,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 
@@ -20,7 +21,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || '';
 const PARTNER_CHANNEL_ID = process.env.PARTNER_CHANNEL_ID || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
-const WEBAPP_URL = (process.env.WEBAPP_URL || '').trim();
+const WEBAPP_URL = (process.env.WEBAPP_URL || 'https://studex-4myq.onrender.com').trim();
 let BOT_USERNAME = (process.env.BOT_USERNAME || '').replace(/^@/, '').trim();
 
 let ALLOWED_ORIGIN = '';
@@ -28,16 +29,18 @@ if (WEBAPP_URL) {
   try { ALLOWED_ORIGIN = new URL(WEBAPP_URL).origin; } catch { /* ignore invalid URL */ }
 }
 
-function isOriginAllowed(origin) {
+function isOriginAllowed(origin, req) {
   if (!origin) return true;
   if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) return true;
+  const host = req?.headers?.host;
+  if (host && (origin === `https://${host}` || origin === `http://${host}`)) return true;
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
 }
 
 function applyCors(req, res) {
   const origin = req.headers.origin;
   if (!origin) return true;
-  if (!isOriginAllowed(origin)) return false;
+  if (!isOriginAllowed(origin, req)) return false;
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -112,6 +115,80 @@ for (const [col, def] of leadMigrations) {
     db.exec(`ALTER TABLE abroad_leads ADD COLUMN ${col} ${def}`);
   }
 }
+
+// Авторазворачивание базы каталога на чистом сервере (Render и т.п.) из data/seed_catalog.json.gz.
+function seedDatabaseIfEmpty() {
+  const specCount = db.prepare('SELECT COUNT(*) AS n FROM specialties').get().n;
+  const worldCount = db.prepare('SELECT COUNT(*) AS n FROM world_institutions').get().n;
+  if (specCount > 0 && worldCount > 0) return;
+
+  const seedPath = path.join(ROOT, 'data', 'seed_catalog.json.gz');
+  if (!fs.existsSync(seedPath)) {
+    console.warn(`Сид каталога не найден: ${seedPath}`);
+    return;
+  }
+
+  const t0 = Date.now();
+  const data = JSON.parse(zlib.gunzipSync(fs.readFileSync(seedPath)).toString('utf8'));
+  db.exec('BEGIN');
+  try {
+    if (specCount === 0) {
+      const insCluster = db.prepare('INSERT OR IGNORE INTO clusters (id, name) VALUES (?, ?)');
+      for (const c of data.clusters || []) insCluster.run(c.id, c.name);
+
+      const insInst = db.prepare(
+        'INSERT OR IGNORE INTO institutions (type, region, name, address, phone) VALUES (?, ?, ?, ?, ?)'
+      );
+      for (const i of data.institutions || []) {
+        insInst.run(i.type, i.region || '', i.name, i.address || '', i.phone || '');
+      }
+
+      const insSpec = db.prepare(
+        `INSERT OR IGNORE INTO specialties
+          (combo_id, level, cluster, code, specialty, university, city, study_form,
+           tuition_type, price_tjs, language, vacant_seats, min_score_prev)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+      for (const s of data.specialties || []) {
+        insSpec.run(
+          s.combo_id, s.level, s.cluster, s.code, s.specialty, s.university,
+          s.city || '', s.study_form || '', s.tuition_type, s.price_tjs ?? null,
+          s.language || '', s.vacant_seats ?? null, s.min_score_prev ?? null
+        );
+      }
+    }
+
+    if (worldCount === 0) {
+      const insWorld = db.prepare(
+        `INSERT OR IGNORE INTO world_institutions
+          (openalex_id, ror_id, name, institution_type, country_code, country, city,
+           official_url, research_works_count, cited_by_count, global_ranking,
+           instruction_language, min_ielts, min_toefl_ibt, base_tuition_usd,
+           tuition_entry_details, scholarships_grants)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+      for (const w of data.world_institutions || []) {
+        insWorld.run(
+          w.openalex_id, w.ror_id ?? null, w.name, w.institution_type, w.country_code,
+          w.country, w.city || '', w.official_url ?? null, w.research_works_count || 0,
+          w.cited_by_count || 0, w.global_ranking ?? null, w.instruction_language ?? null,
+          w.min_ielts ?? null, w.min_toefl_ibt ?? null, w.base_tuition_usd ?? null,
+          w.tuition_entry_details ?? null, w.scholarships_grants ?? null
+        );
+      }
+    }
+    db.exec('COMMIT');
+    console.log(
+      `База развернута из сида за ${Date.now() - t0} мс ` +
+      `(ММТ: ${db.prepare('SELECT COUNT(*) AS n FROM specialties').get().n}, ` +
+      `вузов мира: ${db.prepare('SELECT COUNT(*) AS n FROM world_institutions').get().n})`
+    );
+  } catch (err) {
+    db.exec('ROLLBACK');
+    console.error('Ошибка разворачивания сида:', err);
+  }
+}
+seedDatabaseIfEmpty();
 
 // Базовые официальные пороги для топ-100 мировых вузов (IELTS 7.0) и проверенных
 // популярных направлений (только если поля ещё NULL — не перезаписывают импорт из Excel).

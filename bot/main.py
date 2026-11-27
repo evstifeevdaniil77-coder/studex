@@ -53,7 +53,7 @@ def load_env(path: Path) -> None:
 load_env(ROOT / ".env")
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
-WEBAPP_URL = (os.getenv("WEBAPP_URL") or "").strip()
+WEBAPP_URL = (os.getenv("WEBAPP_URL") or "https://studex-4myq.onrender.com").strip()
 ADMIN_CHAT_ID = (os.getenv("ADMIN_CHAT_ID") or "").strip()
 PARTNER_CHANNEL_ID = (os.getenv("PARTNER_CHANNEL_ID") or "").strip()
 DB_PATH = (ROOT / (os.getenv("DB_PATH") or "data/navigator.db")).resolve()
