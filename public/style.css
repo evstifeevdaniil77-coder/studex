@@ -120,22 +120,6 @@ a:hover { color: var(--accent-hover); }
   text-align: left;
 }
 
-.stamp-box {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent);
-  color: var(--on-accent);
-  border-radius: 12px;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 1;
-  flex: none;
-}
-
 .brand-text {
   display: flex;
   flex-direction: column;
@@ -143,12 +127,29 @@ a:hover { color: var(--accent-hover); }
 }
 
 .brand-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.35rem;
-  letter-spacing: -0.01em;
+  font-size: 1.45rem;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
+
+.brand-grid {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 5px);
+  gap: 3px;
+  flex: none;
+}
+.brand-grid span {
+  width: 5px;
+  height: 5px;
+  border-radius: 1.5px;
+  background: var(--accent);
+}
+.brand-grid span:last-child { opacity: 0.55; }
 
 .brand-sub {
   font-family: var(--font-ui);

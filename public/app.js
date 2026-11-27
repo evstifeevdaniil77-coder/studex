@@ -622,19 +622,19 @@ $('#download-png-btn').addEventListener('click', () => {
   ctx.fillStyle = '#FAF7F2';
   ctx.fillRect(0, 0, W, H);
 
-  // Шапка
-  ctx.fillStyle = '#B45309';
-  ctx.fillRect(32, 34, 56, 56);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 30px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('S', 60, 64);
-
+  // Шапка (чистый текстовый логотип Studex без буквы S в квадрате)
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#B45309';
+  ctx.fillRect(32, 48, 12, 12);
+  ctx.fillRect(48, 48, 12, 12);
+  ctx.fillRect(32, 64, 12, 12);
+  ctx.fillStyle = '#D97706';
+  ctx.fillRect(48, 64, 12, 12);
+
   ctx.fillStyle = '#1F2937';
   ctx.font = 'bold 30px Georgia, serif';
-  ctx.fillText('Studex · Шпаргалка НТЦ (12 мест)', 106, 64);
+  ctx.fillText('Studex · Шпаргалка НТЦ (12 мест)', 76, 62);
 
   // 12 строк
   let y = 122;
