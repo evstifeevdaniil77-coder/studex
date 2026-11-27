@@ -531,12 +531,74 @@ function evaluateAbroadInstitution(r, { userIelts, userToefl, userGpa, userBudge
   };
 }
 
+// 5 направлений обучения для зарубежных вузов (аналог 5 кластеров ММТ).
+const ABROAD_DIRECTIONS = {
+  1: {
+    name: 'IT, инженерия и техника',
+    re: /\b(tech|technolog\w*|polytech\w*|politecnic\w*|engineer\w*|informat\w*|comput\w*|cyber\w*|mining|aviation|aerospace|transport|physic\w*|math\w*|science|sciences|mit|eth|kaist|rwth|tum|itu|metu|caltech|satbayev|bauman)\b/i,
+  },
+  2: {
+    name: 'Экономика, бизнес и финансы',
+    re: /\b(econ\w*|busin\w*|financ\w*|manag\w*|commerc\w*|trade|bank\w*|account\w*|touris\w*|hospitality|market\w*|entrepreneur\w*|hse|lse|insead|hec|wharton|corvinus|plekhanov|sgh)\b/i,
+  },
+  3: {
+    name: 'Филология, языки и искусство',
+    re: /\b(art|arts|music\w*|design|linguist\w*|philolog\w*|pedagog\w*|educat\w*|teach\w*|cultur\w*|film|theat\w*|conservat\w*|humanit\w*|languag\w*|literat\w*|journal\w*|media|architecture|normal\s+univ\w*)\b/i,
+  },
+  4: {
+    name: 'Право, политика и общество',
+    re: /\b(law|legal|jurid\w*|politic\w*|policy|diplom\w*|international\s+relations|public\s+admin\w*|govern\w*|social\s+scien\w*|sociol\w*|histor\w*|psycholog\w*|sciences\s+po|mgimo|kutafin)\b/i,
+  },
+  5: {
+    name: 'Медицина и биология',
+    re: /\b(medic\w*|health|biolog\w*|biomed\w*|pharm\w*|dent\w*|nurs\w*|veterin\w*|agricult\w*|agrar\w*|sport\w*|clinic\w*|hospital|sechenov|pirogov|karolinska|johns\s+hopkins|charit\w*)\b/i,
+  },
+};
+
+// Проверенные курируемые вузы и их подтверждённые направления (1..5).
+const CURATED_DIRECTIONS = {
+  'University of Warsaw': [1, 2, 3, 4],
+  'Universiti Putra Malaysia': [1, 2, 5],
+  'Middle East Technical University': [1, 2, 4],
+  'Istanbul Technical University': [1],
+  'Eötvös Loránd University': [1, 3, 4],
+  'University of Debrecen': [1, 2, 3, 4, 5],
+  'Al-Farabi Kazakh National University': [1, 2, 3, 4, 5],
+  'Boğaziçi University': [1, 2, 3, 4],
+  'Nazarbayev University': [1, 2, 3, 4, 5],
+  "Taylor's University": [1, 2, 3, 4, 5],
+  'Satbayev University': [1],
+  'Asia Pacific University of Technology & Innovation': [1, 2],
+};
+
+// Возвращает 2 (профильный вуз), 1 (проверенный многопрофильный вуз), 0 (не подходит под направление).
+function matchAbroadDirection(r, direction) {
+  if (!direction || !ABROAD_DIRECTIONS[direction]) return 1;
+  const hay = `${r.name || ''} ${r.tuition_entry_details || ''} ${r.scholarships_grants || ''}`;
+  const exactRe = ABROAD_DIRECTIONS[direction].re;
+  if (exactRe.test(hay)) return 2;
+
+  const curated = CURATED_DIRECTIONS[r.name];
+  if (curated) return curated.includes(direction) ? 2 : 0;
+
+  // Многопрофильный проверенный вуз (например Harvard, Oxford, Toronto): подходит, если он не узкопрофильный по другому направлению
+  const isVerified = r.min_ielts !== null || r.min_toefl_ibt !== null;
+  if (isVerified) {
+    const narrowOther = Object.entries(ABROAD_DIRECTIONS)
+      .some(([k, cfg]) => Number(k) !== direction && cfg.re.test(r.name || ''));
+    if (!narrowOther) return 1;
+  }
+  return 0;
+}
+
 function apiAbroadSearch(res, params) {
   const limit = Math.min(50, Math.max(1, Number(params.get('limit')) || 20));
   const page = Math.max(1, Number(params.get('page')) || 1);
   const country = (params.get('country') || '').trim();
   const type = (params.get('type') || '').trim();
   const search = (params.get('query') || params.get('q') || '').trim();
+  const rawDir = toNumber(params.get('direction'));
+  const direction = rawDir !== null && rawDir >= 1 && rawDir <= 5 && Number.isInteger(rawDir) ? rawDir : null;
   const userIelts = toNumber(params.get('ielts'));
   const userToefl = toNumber(params.get('toefl'));
   const userGpa = toNumber(params.get('gpa'));
@@ -556,8 +618,8 @@ function apiAbroadSearch(res, params) {
   const ctx = { userIelts, userToefl, userGpa, userBudget };
   const hasAnyInput = userIelts !== null || userToefl !== null || userGpa !== null || (userBudget !== null && userBudget >= 0);
 
-  // Быстрый путь без параметров оценки: прямая SQL-пагинация
-  if (!hasAnyInput) {
+  // Быстрый путь без параметров оценки и без фильтра по направлению: прямая SQL-пагинация
+  if (!hasAnyInput && !direction) {
     const offset = (page - 1) * limit;
     const total = db.prepare(`SELECT COUNT(*) AS n FROM world_institutions ${clause}`).get(...args).n;
     const rows = db.prepare(
@@ -576,13 +638,13 @@ function apiAbroadSearch(res, params) {
       return { ...r, admission_chance: ev.admission_chance, grant_chance: ev.grant_chance, reason: ev.reason };
     });
     return sendJson(res, 200, {
-      total, hiddenCount: 0, page, limit,
+      total, hiddenCount: 0, page, limit, direction: null,
       totalPages: Math.max(1, Math.ceil(total / limit)),
       results,
     });
   }
 
-  // Полное ранжирование по 4 группам (high -> medium -> unknown -> low)
+  // Полное ранжирование (с учётом направления 1..5 и 4 групп high -> medium -> unknown -> low)
   const allRows = db.prepare(
     `SELECT openalex_id, ror_id, name, institution_type, country_code, country, city,
             official_url, research_works_count, cited_by_count,
@@ -593,23 +655,34 @@ function apiAbroadSearch(res, params) {
 
   const buckets = { high: [], medium: [], unknown: [], low: [] };
   for (const r of allRows) {
+    const dirRank = matchAbroadDirection(r, direction);
+    if (direction && dirRank === 0) continue;
     const ev = evaluateAbroadInstitution(r, ctx);
     const enriched = {
       ...r,
       _diff: ev.sortDiff,
+      _dirRank: dirRank,
+      _verified: (r.min_ielts !== null || r.min_toefl_ibt !== null) ? 1 : 0,
       admission_chance: ev.admission_chance,
       grant_chance: ev.grant_chance,
       reason: ev.reason,
     };
-    buckets[ev.group === 'verified_idle' ? 'unknown' : ev.group].push(enriched);
+    const key = ev.group === 'verified_idle' ? 'high' : ev.group;
+    buckets[key].push(enriched);
   }
 
-  buckets.high.sort((a, b) => a._diff - b._diff || b.research_works_count - a.research_works_count);
-  buckets.medium.sort((a, b) => a._diff - b._diff || b.research_works_count - a.research_works_count);
-  buckets.unknown.sort((a, b) => a._diff - b._diff || b.research_works_count - a.research_works_count);
-  buckets.low.sort((a, b) => a._diff - b._diff || b.research_works_count - a.research_works_count);
+  const cmp = (a, b) =>
+    b._verified - a._verified ||
+    b._dirRank - a._dirRank ||
+    a._diff - b._diff ||
+    b.research_works_count - a.research_works_count;
 
-  const combined = showAll
+  buckets.high.sort(cmp);
+  buckets.medium.sort(cmp);
+  buckets.unknown.sort(cmp);
+  buckets.low.sort(cmp);
+
+  const combined = (showAll || !hasAnyInput)
     ? [...buckets.high, ...buckets.medium, ...buckets.unknown, ...buckets.low]
     : [...buckets.high, ...buckets.medium, ...buckets.unknown];
 
@@ -620,7 +693,8 @@ function apiAbroadSearch(res, params) {
 
   sendJson(res, 200, {
     total,
-    hiddenCount: showAll ? 0 : buckets.low.length,
+    direction,
+    hiddenCount: (showAll || !hasAnyInput) ? 0 : buckets.low.length,
     counts: {
       high: buckets.high.length,
       medium: buckets.medium.length,
@@ -630,7 +704,7 @@ function apiAbroadSearch(res, params) {
     page: safePage,
     limit,
     totalPages,
-    results: combined.slice(start, start + limit).map(({ _diff, ...rest }) => rest),
+    results: combined.slice(start, start + limit).map(({ _diff, _dirRank, _verified, ...rest }) => rest),
   });
 }
 

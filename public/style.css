@@ -325,6 +325,30 @@ a:hover { color: var(--accent-hover); }
   box-shadow: var(--shadow-card);
 }
 
+.ab-direction-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+.ab-direction-block .cluster-squares {
+  max-width: 380px;
+}
+.direction-desc {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 12px;
+  width: fit-content;
+}
+
 .hero-title {
   font-size: 1.7rem;
   line-height: 1.15;

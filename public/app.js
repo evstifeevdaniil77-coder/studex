@@ -44,11 +44,21 @@ const CLUSTERS = {
   },
 };
 
+const ABROAD_DIRECTIONS = {
+  1: 'IT, инженерия и техника',
+  2: 'Экономика, бизнес и финансы',
+  3: 'Филология, языки и искусство',
+  4: 'Право, политика и общество',
+  5: 'Медицина и биология',
+};
+
 const state = {
   mode: 'tj',        // 'tj' | 'abroad'
   screen: 'pick',    // 'pick' | 'sheet' | 'abroad' | 'clusters'
   prevScreen: 'pick',
   cluster: 1,
+  abroadDirection: 1,
+  abroadDirSyncedCluster: 1,
   level: 'ВУЗ',
   messenger: 'Telegram',
   pickData: null,
@@ -195,9 +205,18 @@ function showScreen(name) {
   $('#nav-sheet').setAttribute('aria-pressed', String(name === 'sheet'));
 
   if (name === 'sheet') renderSheet();
-  if (name === 'abroad' && !state.worldLoaded) {
-    state.worldLoaded = true;
-    fetchWorld(1);
+  if (name === 'abroad') {
+    let dirChanged = false;
+    if (state.abroadDirSyncedCluster !== state.cluster) {
+      state.abroadDirection = state.cluster;
+      state.abroadDirSyncedCluster = state.cluster;
+      dirChanged = true;
+    }
+    updateAbroadDirectionUI();
+    if (!state.worldLoaded || dirChanged) {
+      state.worldLoaded = true;
+      fetchWorld(1);
+    }
   }
   updateStrip();
   window.scrollTo({ top: 0 });
@@ -685,6 +704,23 @@ $('#download-png-btn').addEventListener('click', () => {
 });
 
 // ---------- Экран 3: За рубежом (OpenAlex 10 000 + агентство) ----------
+function updateAbroadDirectionUI() {
+  const dir = state.abroadDirection;
+  for (const b of document.querySelectorAll('#ab-direction-squares .sq-btn')) {
+    b.setAttribute('aria-checked', String(Number(b.dataset.direction) === dir));
+  }
+  const desc = $('#ab-direction-desc');
+  if (desc) desc.textContent = '0' + dir + ' · ' + (ABROAD_DIRECTIONS[dir] || '');
+}
+
+for (const btn of document.querySelectorAll('#ab-direction-squares .sq-btn')) {
+  btn.addEventListener('click', () => {
+    state.abroadDirection = Number(btn.dataset.direction);
+    updateAbroadDirectionUI();
+    scheduleWorld(0);
+  });
+}
+
 let worldTimer = null;
 function scheduleWorld(delay = 0) {
   clearTimeout(worldTimer);
@@ -738,6 +774,7 @@ async function fetchWorld(page) {
   if (budget !== '') params.set('budget', budget);
   if (country) params.set('country', country);
   if (q) params.set('query', q);
+  if (state.abroadDirection) params.set('direction', String(state.abroadDirection));
   if ($('#ab-show-all').checked) params.set('show_all', '1');
 
   $('#ab-count').textContent = 'ЗАГРУЗКА…';
