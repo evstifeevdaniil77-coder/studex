@@ -90,7 +90,7 @@ a:hover { color: var(--accent-hover); }
 
 /* ---------- Шапка ---------- */
 .app-header {
-  padding: 16px 16px 14px;
+  padding: 12px 16px 12px;
   background: var(--surface);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
@@ -103,7 +103,7 @@ a:hover { color: var(--accent-hover); }
     "brand meta"
     "tabs tabs";
   align-items: center;
-  gap: 12px 10px;
+  gap: 10px 10px;
 }
 
 .brand-btn {
@@ -116,12 +116,13 @@ a:hover { color: var(--accent-hover); }
   padding: 0;
   color: var(--ink);
   cursor: pointer;
-  min-height: 48px;
+  min-height: 44px;
+  text-align: left;
 }
 
 .stamp-box {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,9 +131,15 @@ a:hover { color: var(--accent-hover); }
   border-radius: 12px;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   line-height: 1;
   flex: none;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
 }
 
 .brand-word {
@@ -141,6 +148,14 @@ a:hover { color: var(--accent-hover); }
   font-size: 1.35rem;
   letter-spacing: -0.01em;
   color: var(--ink);
+}
+
+.brand-sub {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 .header-meta {
@@ -295,26 +310,26 @@ a:hover { color: var(--accent-hover); }
 /* ---------- Основная область ---------- */
 .app-main {
   flex: 1 1 auto;
-  padding: 20px 16px 28px;
+  padding: 14px 16px 24px;
 }
 
 .screen {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .pick-layout {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
 }
 
 .pick-controls {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 18px;
+  gap: 12px;
+  padding: 14px 16px;
   background: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
@@ -357,15 +372,14 @@ a:hover { color: var(--accent-hover); }
 }
 
 .sq-btn {
-  aspect-ratio: 1;
-  min-height: 48px;
+  height: 48px;
   background: var(--bg);
   color: var(--ink);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: 12px;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   cursor: pointer;
   display: flex;
   align-items: center;

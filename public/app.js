@@ -604,7 +604,7 @@ $('#copy-sheet-btn').addEventListener('click', async () => {
     `${String(i + 1).padStart(2, '0')}. ID ${it.combo_id} | Код ${it.code} | ${it.university} · ${it.specialty}`,
   );
   try {
-    await navigator.clipboard.writeText('12 МЕСТ — ШПАРГАЛКА НТЦ:\n' + lines.join('\n'));
+    await navigator.clipboard.writeText('Studex — Шпаргалка НТЦ:\n' + lines.join('\n'));
     showSheetMsg('СКОПИРОВАНО В БУФЕР');
   } catch {
     showSheetMsg('НЕ УДАЛОСЬ СКОПИРОВАТЬ', true);
@@ -626,10 +626,10 @@ $('#download-png-btn').addEventListener('click', () => {
   ctx.fillStyle = '#B45309';
   ctx.fillRect(32, 34, 56, 56);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 28px Georgia, serif';
+  ctx.font = 'bold 30px Georgia, serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('12', 60, 64);
+  ctx.fillText('S', 60, 64);
 
   ctx.textAlign = 'left';
   ctx.fillStyle = '#1F2937';
@@ -675,13 +675,13 @@ $('#download-png-btn').addEventListener('click', () => {
 
   ctx.fillStyle = '#6B645C';
   ctx.font = '15px sans-serif';
-  ctx.fillText('Studex · 12 мест · ntc.tj', 32, H - 24);
+  ctx.fillText('Studex · Навигатор поступления · ntc.tj', 32, H - 24);
 
   const link = document.createElement('a');
-  link.download = '12-mest-ntc.png';
+  link.download = 'studex-mmt.png';
   link.href = canvas.toDataURL('image/png');
   link.click();
-  showSheetMsg('Картинка 12-mest-ntc.png сохранена');
+  showSheetMsg('Картинка studex-mmt.png сохранена');
 });
 
 // ---------- Экран 3: За рубежом (OpenAlex 10 000 + агентство) ----------
